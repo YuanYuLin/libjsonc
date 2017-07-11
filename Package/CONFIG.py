@@ -9,8 +9,15 @@ def MAIN_ENV(args):
 def MAIN_EXTRACT(args):
     pkg_dir = args["pkg_path"]
     output_dir = args["output_path"]
+    arch = ops.getEnv("ARCH_ALT")
+    src_lib = None
 
-    src_lib = iopc.getBaseRootFile("/lib/arm-linux-gnueabihf/libjson-c.so.2.0.0")
+    if arch == "armhf":
+        src_lib = iopc.getBaseRootFile("/lib/arm-linux-gnueabihf/libjson-c.so.2.0.0")
+
+    if arch == "armel":
+        src_lib = iopc.getBaseRootFile("/lib/arm-linux-gnueabi/libjson-c.so.2.0.0")
+
     ops.copyto(src_lib, output_dir)
 
     ops.ln(output_dir, "libjson-c.so.2.0.0", "libjson-c.so.2")
