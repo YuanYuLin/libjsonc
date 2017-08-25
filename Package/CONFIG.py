@@ -13,10 +13,13 @@ def MAIN_EXTRACT(args):
     src_lib = None
 
     if arch == "armhf":
-        src_lib = iopc.getBaseRootFile("/lib/arm-linux-gnueabihf/libjson-c.so.2.0.0")
-
-    if arch == "armel":
-        src_lib = iopc.getBaseRootFile("/lib/arm-linux-gnueabi/libjson-c.so.2.0.0")
+        src_lib = iopc.getBaseRootFile("lib/arm-linux-gnueabihf/libjson-c.so.2.0.0")
+    elif arch == "armel":
+        src_lib = iopc.getBaseRootFile("lib/arm-linux-gnueabi/libjson-c.so.2.0.0")
+    elif arch == "x86_64":
+        src_lib_dir = iopc.getBaseRootFile("lib/x86_64-linux-gnu/libjson-c.so.2.0.0")
+    else:
+        sys.exit(1)
 
     ops.copyto(src_lib, output_dir)
 
@@ -35,7 +38,7 @@ def MAIN_BUILD(args):
 def MAIN_INSTALL(args):
     output_dir = args["output_path"]
 
-    src_includes = iopc.getBaseRootFile("/usr/include/json-c/.")
+    src_includes = iopc.getBaseRootFile("usr/include/json-c/.")
     dst_includes = ops.path_join("include",args["pkg_name"])
     iopc.installBin(args["pkg_name"], src_includes, dst_includes)
 
