@@ -1,55 +1,85 @@
 import ops
 import iopc
 
-def MAIN_ENV(args):
+pkg_path = ""
+output_dir = ""
+arch = ""
+src_lib_dir = ""
+dst_lib_dir = ""
+src_include_dir = ""
+dst_include_dir = ""
+
+def set_global(args):
+    global pkg_path
+    global output_dir
+    global arch
+    global src_lib_dir
+    global dst_lib_dir
+    global src_include_dir
+    global dst_include_dir
+    global arch
     pkg_path = args["pkg_path"]
     output_dir = args["output_path"]
+    arch = ops.getEnv("ARCH_ALT")
+    if arch == "armhf":
+        src_lib_dir = iopc.getBaseRootFile("lib/arm-linux-gnueabihf")
+    elif arch == "armel":
+        src_lib_dir = iopc.getBaseRootFile("lib/arm-linux-gnueabi")
+    elif arch == "x86_64":
+        src_lib_dir = iopc.getBaseRootFile("lib/x86_64-linux-gnu")
+    else:
+        sys.exit(1)
+    dst_lib_dir = ops.path_join(output_dir, "lib")
+
+    src_include_dir = iopc.getBaseRootFile("usr/include/json-c")
+    dst_include_dir = ops.path_join("include",args["pkg_name"])
+
+def MAIN_ENV(args):
+    set_global(args)
+
     return False
 
 def MAIN_EXTRACT(args):
-    pkg_dir = args["pkg_path"]
-    output_dir = args["output_path"]
-    arch = ops.getEnv("ARCH_ALT")
-    src_lib = None
+    set_global(args)
 
-    if arch == "armhf":
-        src_lib = iopc.getBaseRootFile("lib/arm-linux-gnueabihf/libjson-c.so.2.0.0")
-    elif arch == "armel":
-        src_lib = iopc.getBaseRootFile("lib/arm-linux-gnueabi/libjson-c.so.2.0.0")
-    elif arch == "x86_64":
-        src_lib_dir = iopc.getBaseRootFile("lib/x86_64-linux-gnu/libjson-c.so.2.0.0")
-    else:
-        sys.exit(1)
+    ops.mkdir(dst_lib_dir)
+    ops.copyto(ops.path_join(src_lib_dir, "libjson-c.so.3.0.1"), dst_lib_dir)
+    ops.ln(dst_lib_dir, "libjson-c.so.3.0.1", "libjson-c.so.3")
+    ops.ln(dst_lib_dir, "libjson-c.so.3.0.1", "libjson-c.so")
 
-    ops.copyto(src_lib, output_dir)
+    return True
 
-    ops.ln(output_dir, "libjson-c.so.2.0.0", "libjson-c.so.2")
-    ops.ln(output_dir, "libjson-c.so.2.0.0", "libjson-c.so")
-    return False
+def MAIN_PATCH(args, patch_group_name):
+    set_global(args)
+    for patch in iopc.get_patch_list(pkg_path, patch_group_name):
+        if iopc.apply_patch(build_dir, patch):
+            continue
+        else:
+            sys.exit(1)
+
+    return True
 
 def MAIN_CONFIGURE(args):
-    output_dir = args["output_path"]
+    set_global(args)
+
     return False
 
 def MAIN_BUILD(args):
-    output_dir = args["output_path"]
+    set_global(args)
     return False
 
 def MAIN_INSTALL(args):
-    output_dir = args["output_path"]
+    set_global(args)
 
-    src_includes = iopc.getBaseRootFile("usr/include/json-c/.")
-    dst_includes = ops.path_join("include",args["pkg_name"])
-    iopc.installBin(args["pkg_name"], src_includes, dst_includes)
+    iopc.installBin(args["pkg_name"], ops.path_join(src_include_dir, "."), dst_include_dir)
+    iopc.installBin(args["pkg_name"], ops.path_join(dst_lib_dir, "."), "lib") 
 
-    src_lib = ops.path_join(output_dir, ".")
-    iopc.installBin(args["pkg_name"], src_lib, "usr/lib")
     return False
 
 def MAIN_CLEAN_BUILD(args):
-    output_dir = args["output_path"]
+    set_global(args)
     return False
 
 def MAIN(args):
-    output_dir = args["output_path"]
+    set_global(args)
 
