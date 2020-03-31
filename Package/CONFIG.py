@@ -43,9 +43,11 @@ def MAIN_EXTRACT(args):
     set_global(args)
 
     ops.mkdir(dst_lib_dir)
-    ops.copyto(ops.path_join(src_lib_dir, "libjson-c.so.3.0.1"), dst_lib_dir)
-    ops.ln(dst_lib_dir, "libjson-c.so.3.0.1", "libjson-c.so.3")
-    ops.ln(dst_lib_dir, "libjson-c.so.3.0.1", "libjson-c.so")
+    lib_so = "libjson-c.so.2.0.0"
+    ops.copyto(ops.path_join(src_lib_dir, lib_so), dst_lib_dir)
+    ops.ln(dst_lib_dir, lib_so, "libjson-c.so.2.0")
+    ops.ln(dst_lib_dir, lib_so, "libjson-c.so.2")
+    ops.ln(dst_lib_dir, lib_so, "libjson-c.so")
 
     return True
 
